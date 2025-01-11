@@ -80,9 +80,26 @@ namespace ToDoFrontend
         static async Task CompleteTask(HttpClient client)
         {
             Console.Write("Podaj ID zadania do ukończenia: ");
-            var id = int.Parse(Console.ReadLine());
+            if (!int.TryParse(Console.ReadLine(), out var id))
+            {
+                Console.WriteLine("Nieprawidłowy ID.");
+                return;
+            }
 
-            var task = new ToDoItem { Id = id, IsCompleted = true }; // Przygotuj zmodyfikowany obiekt
+            Console.Write("Podaj tytuł zadania: ");
+            var title = Console.ReadLine();
+
+            Console.Write("Podaj opis zadania: ");
+            var description = Console.ReadLine();
+
+            var task = new ToDoItem
+            {
+                Id = id,
+                Title = title,
+                Description = description,
+                IsCompleted = true
+            };
+
             var response = await client.PutAsJsonAsync($"api/todo/{id}", task);
             if (response.IsSuccessStatusCode)
             {
@@ -94,6 +111,7 @@ namespace ToDoFrontend
                 Console.WriteLine($"Błąd podczas aktualizacji zadania: {response.StatusCode} - {error}");
             }
         }
+
 
         static async Task DeleteTask(HttpClient client)
         {
