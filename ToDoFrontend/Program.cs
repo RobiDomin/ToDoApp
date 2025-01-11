@@ -10,7 +10,7 @@ namespace ToDoFrontend
         static async Task Main(string[] args)
         {
             HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri("http://localhost:5090/api/"); // Adres API backendu
+            client.BaseAddress = new Uri("http://localhost:7083/api/"); // Adres API backendu
 
             Console.WriteLine("=== To-Do App ===");
             Console.WriteLine("1. Wyświetl zadania");
