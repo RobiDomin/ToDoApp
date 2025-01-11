@@ -10,7 +10,7 @@ namespace ToDoFrontend
         static async Task Main(string[] args)
         {
             HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri("http://localhost:7083/api/"); // Adres API backendu
+            client.BaseAddress = new Uri("https://localhost:5000/");
 
             Console.WriteLine("=== To-Do App ===");
             Console.WriteLine("1. Wyświetl zadania");
@@ -49,7 +49,7 @@ namespace ToDoFrontend
 
         static async Task GetTasks(HttpClient client)
         {
-            var tasks = await client.GetFromJsonAsync<TaskItem[]>("tasks");
+            var tasks = await client.GetFromJsonAsync<ToDoItem[]>("api/todo");
             Console.WriteLine("Twoje zadania:");
             foreach (var task in tasks)
             {
@@ -64,15 +64,16 @@ namespace ToDoFrontend
             Console.Write("Podaj opis zadania: ");
             var description = Console.ReadLine();
 
-            var newTask = new TaskItem { Title = title, Description = description };
-            var response = await client.PostAsJsonAsync("tasks", newTask);
+            var newTask = new ToDoItem { Title = title, Description = description };
+            var response = await client.PostAsJsonAsync("api/todo", newTask);
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("Zadanie dodane pomyślnie!");
             }
             else
             {
-                Console.WriteLine("Błąd podczas dodawania zadania.");
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Błąd podczas dodawania zadania: {response.StatusCode} - {error}");
             }
         }
 
@@ -80,14 +81,17 @@ namespace ToDoFrontend
         {
             Console.Write("Podaj ID zadania do ukończenia: ");
             var id = int.Parse(Console.ReadLine());
-            var response = await client.PutAsJsonAsync($"tasks/{id}/complete", new { });
+
+            var task = new ToDoItem { Id = id, IsCompleted = true }; // Przygotuj zmodyfikowany obiekt
+            var response = await client.PutAsJsonAsync($"api/todo/{id}", task);
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("Zadanie oznaczone jako ukończone!");
             }
             else
             {
-                Console.WriteLine("Błąd podczas aktualizacji zadania.");
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Błąd podczas aktualizacji zadania: {response.StatusCode} - {error}");
             }
         }
 
@@ -95,19 +99,20 @@ namespace ToDoFrontend
         {
             Console.Write("Podaj ID zadania do usunięcia: ");
             var id = int.Parse(Console.ReadLine());
-            var response = await client.DeleteAsync($"tasks/{id}");
+            var response = await client.DeleteAsync($"api/todo/{id}");
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("Zadanie usunięte!");
             }
             else
             {
-                Console.WriteLine("Błąd podczas usuwania zadania.");
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Błąd podczas usuwania zadania: {response.StatusCode} - {error}");
             }
         }
     }
 
-    public class TaskItem
+    public class ToDoItem
     {
         public int Id { get; set; }
         public string Title { get; set; }
